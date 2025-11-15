@@ -1,0 +1,60 @@
+﻿@page "/pokazanies/create"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить показаний</PageTitle>
+
+<h1>Добавить показание</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Pokazanie" OnValidSubmit="AddPokazanie" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="datapokazaniya" class="form-label">Дата:</label> 
+                <InputDate id="datapokazaniya" @bind-Value="Pokazanie.DataPokazaniya" class="form-control" /> 
+                <ValidationMessage For="() => Pokazanie.DataPokazaniya" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="znacheniepokazaniya" class="form-label">Значение:</label> 
+                <InputNumber id="znacheniepokazaniya" @bind-Value="Pokazanie.ZnacheniePokazaniya" class="form-control" /> 
+                <ValidationMessage For="() => Pokazanie.ZnacheniePokazaniya" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="schetchikid" class="form-label">Id счетчика:</label>
+                <input type="hidden" name="Pokazanie.SchetchikId" id="schetchikid" @bind="AbonentId" />
+                @* <InputNumber id="schetchikid" @bind-Value="Pokazanie.SchetchikId" class="form-control" />  *@
+                @* <ValidationMessage For="() => Pokazanie.SchetchikId" class="text-danger" />  *@
+            </div>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/pokazanies?schetchikid=@($"{SchetchikId}")&abonentid=@($"{AbonentId}")">Возврат к списку показаний</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int SchetchikId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Pokazanie Pokazanie { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddPokazanie()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Pokazaniya.Add(Pokazanie);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo($"/pokazanies?schetchikid={SchetchikId}&abonentid={AbonentId}");
+    }
+}

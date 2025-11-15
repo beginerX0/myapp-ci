@@ -1,0 +1,47 @@
+﻿@page "/schetchiks"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using _1lab.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Счетчики</PageTitle>
+
+<h1>Счетчики</h1>
+
+<p>
+    <a href="abonents">Список абонентов</a>
+</p>
+
+<p>
+    <a href="@($"schetchiks/create?abonentid={AbonentId}")">Добавить</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Schetchiks.Where(i=>i.AbonentId==AbonentId)">
+    <PropertyColumn Title="Id счетчика" Property="schetchik => schetchik.SchetchikId" />
+    <PropertyColumn Title="Номер счетчика" Property="schetchik => schetchik.Number" />
+    <PropertyColumn Title="Тип" Property="schetchik => schetchik.Type" />
+    <PropertyColumn Title="Дата установки" Property="schetchik => schetchik.LaunchData" />
+    <PropertyColumn Title="Абонент" Property="schetchik => schetchik.Abonent.getFullName()" />
+
+    <TemplateColumn Context="schetchik">
+        <a href="@($"pokazanies?schetchikid={schetchik.SchetchikId}&abonentid={AbonentId}")">Показания</a> |
+        <a href="@($"schetchiks/edit?schetchikid={schetchik.SchetchikId}&abonentid={AbonentId}")">Редактировать</a> |
+        <a href="@($"schetchiks/details?schetchikid={schetchik.SchetchikId}&abonentid={AbonentId}")">Просмотр</a> |
+        <a href="@($"schetchiks/delete?schetchikid={schetchik.SchetchikId}&abonentid={AbonentId}")">Удалить</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

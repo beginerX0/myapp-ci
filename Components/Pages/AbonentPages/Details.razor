@@ -1,0 +1,53 @@
+﻿@page "/abonents/details"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Подробнее</PageTitle>
+
+<h1>Подробнее</h1>
+
+<div>
+    <hr />
+    @if (abonent is null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Фамилия</dt>
+            <dd class="col-sm-10">@abonent.LastName</dd>
+            <dt class="col-sm-2">Имя</dt>
+            <dd class="col-sm-10">@abonent.Name</dd>
+            <dt class="col-sm-2">Отчество</dt>
+            <dd class="col-sm-10">@abonent.SecureName</dd>
+            <dt class="col-sm-2">Адрес</dt>
+            <dd class="col-sm-10">@abonent.Address</dd>
+            <dt class="col-sm-2">Номер телефона</dt>
+            <dd class="col-sm-10">@abonent.Phone</dd>
+        </dl>
+        <div>
+            <a href="@($"/abonents/edit?abonentid={abonent.AbonentId}")">Редактировать</a> |
+            <a href="@($"/abonents")">Возврат к списку абонентов</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Abonent? abonent;
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        abonent = await context.Abonents.FirstOrDefaultAsync(m => m.AbonentId == AbonentId);
+
+        if (abonent is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

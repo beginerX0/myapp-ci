@@ -1,0 +1,102 @@
+﻿@page "/pokazanies/edit"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Редактировать показание</PageTitle>
+
+<h1>Редактировать показание</h1>
+
+<hr />
+@if (Pokazanie is null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Pokazanie" OnValidSubmit="UpdatePokazanie" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+
+                <input type="hidden" name="Pokazanie.PokazanieId" value="@Pokazanie.PokazanieId" class="form-control" />
+
+                <div class="mb-3">
+                    <label for="datapokazaniya" class="form-label">Дата:</label>
+                    <InputDate id="datapokazaniya" @bind-Value="Pokazanie.DataPokazaniya" class="form-control" />
+                    <ValidationMessage For="() => Pokazanie.DataPokazaniya" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="znacheniepokazaniya" class="form-label">Значение:</label>
+                    <InputNumber id="znacheniepokazaniya" @bind-Value="Pokazanie.ZnacheniePokazaniya" class="form-control" />
+                    <ValidationMessage For="() => Pokazanie.ZnacheniePokazaniya" class="text-danger" />
+                </div>
+
+                <input type="hidden" name="Pokazanie.SchetchikId" value="@Pokazanie.SchetchikId" class="form-control" />
+
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/pokazanies?schetchikid=@($"{SchetchikId}")&abonentid=@($"{AbonentId}")">Возврат к списку показаний</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int PokazanieId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int SchetchikId { get; set; }
+
+    [SupplyParameterFromForm]
+    private Pokazanie? Pokazanie { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Pokazanie ??= await context.Pokazaniya.FirstOrDefaultAsync(m => m.PokazanieId == PokazanieId);
+
+        if (Pokazanie is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task UpdatePokazanie()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Pokazanie!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!PokazanieExists(Pokazanie!.PokazanieId))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo($"/pokazanies?schetchikid={SchetchikId}&abonentid={AbonentId}");
+    }
+
+    private bool PokazanieExists(int pokazanieid)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Pokazaniya.Any(e => e.PokazanieId == pokazanieid);
+    }
+}

@@ -1,0 +1,79 @@
+﻿@RenderMode.InteractiveAuto
+@page "/schetchiks/create"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Добавить счетчик</PageTitle>
+
+<h1>Добавить</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Schetchik" OnValidSubmit="AddSchetchik" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="number" class="form-label">Номер:</label> 
+                <InputNumber id="number" @bind-Value="Schetchik.Number" class="form-control" /> 
+                <ValidationMessage For="() => Schetchik.Number" class="text-danger" /> 
+            </div>
+            <div class="mb-3">
+                <label for="type" class="form-label">Тип:</label> 
+                <InputText id="type" @bind-Value="Schetchik.Type" class="form-control" /> 
+                <ValidationMessage For="() => Schetchik.Type" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="launchdata" class="form-label">Дата установки:</label> 
+                <InputDate id="launchdata" @bind-Value="Schetchik.LaunchData" class="form-control" /> 
+                <ValidationMessage For="() => Schetchik.LaunchData" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="abonentid" class="form-label">Абонент:</label>
+                <InputSelect id="abonentid" @bind-Value="Schetchik.AbonentId" class="form-control">
+                    @foreach (var abonent in abonents)
+                    {
+                        <option value="@abonent.AbonentId">
+                            @abonent.LastName @abonent.Name @abonent.SecureName
+                        </option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Schetchik.AbonentId" class="text-danger" />
+            </div>        
+            <input type="hidden" name="Schetchik.AbonentId" id="abonentid" @bind="Schetchik.AbonentId" />
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/schetchiks?abonentid=@($"{AbonentId}")">Возврат к списку счетчиков</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Schetchik Schetchik { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+
+    public List<Abonent> abonents=[];
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        abonents = await context.Abonents.ToListAsync();
+    }
+
+    private async Task AddSchetchik()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Schetchiks.Add(Schetchik);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo($"/schetchiks?abonentid={AbonentId}");
+    }
+}

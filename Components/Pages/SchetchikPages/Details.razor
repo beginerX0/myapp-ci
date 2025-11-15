@@ -1,0 +1,57 @@
+﻿@page "/schetchiks/details"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+@code {
+    [SupplyParameterFromQuery]
+    private int SchetchikId { get; set; }
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    private Schetchik? schetchik=default;
+    private Abonent? abonent = default;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        schetchik = await context.Schetchiks.FirstOrDefaultAsync(m => m.SchetchikId == SchetchikId);
+        abonent = await context.Abonents.FirstOrDefaultAsync(m => m.AbonentId == schetchik.AbonentId);
+
+        if (schetchik is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
+
+<PageTitle>Просмотр показания</PageTitle>
+
+<h1>Просмотр показания</h1>
+
+<div>
+    <hr />
+    @if (schetchik is null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else {
+        <dl class="row"> 
+            <dt class="col-sm-2">Номер</dt> 
+            <dd class="col-sm-10">@schetchik.Number</dd> 
+            <dt class="col-sm-2">Тип</dt> 
+            <dd class="col-sm-10">@schetchik.Type</dd> 
+            <dt class="col-sm-2">Дата установки</dt> 
+            <dd class="col-sm-10">@schetchik.LaunchData</dd> 
+            <dt class="col-sm-2">Абонент</dt> 
+            <dd class="col-sm-10">@abonent.getFullName()</dd> 
+        </dl>
+        <div>
+            <a href="@($"/schetchiks/edit?schetchikid={schetchik.SchetchikId}")">Редактировать</a> |
+            <a href="/schetchiks?@($"abonentid={AbonentId}")">Возврат к списку счетчиков</a>
+        </div>
+    }
+</div>
+

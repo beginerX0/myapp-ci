@@ -1,0 +1,71 @@
+﻿@page "/abonents/delete"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Удалить абонента</PageTitle>
+
+<h1>Удалить абонента</h1>
+
+<p>Вы уверены?</p>
+<div>
+    <hr />
+    @if (abonent is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-2">Фамилия</dt>
+            <dd class="col-sm-10">@abonent.LastName</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Имя</dt>
+            <dd class="col-sm-10">@abonent.Name</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Отчество</dt>
+            <dd class="col-sm-10">@abonent.SecureName</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Адрес</dt>
+            <dd class="col-sm-10">@abonent.Address</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Номер телефона</dt>
+            <dd class="col-sm-10">@abonent.Phone</dd>
+        </dl>
+        <EditForm method="post" Model="abonent" OnValidSubmit="DeleteAbonent" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(abonent is null)">Удалить</button> |
+            <a href="/abonents">Возврат к списку абонентов</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private Abonent? abonent;
+
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        abonent = await context.Abonents.FirstOrDefaultAsync(m => m.AbonentId == AbonentId);
+
+        if (abonent is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteAbonent()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Abonents.Remove(abonent!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/abonents");
+    }
+}

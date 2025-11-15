@@ -1,0 +1,45 @@
+﻿@page "/pokazanies"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using _1lab.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+
+<PageTitle>Список показаний</PageTitle>
+
+<h1>Список показаний</h1>
+<p>
+    <a href=@($"schetchiks?abonentid={AbonentId}")>Список счетчиков</a>
+</p>
+<p>
+    <a href=@($"pokazanies/create?schetchikid={SchetchikId}&abonentid={AbonentId}")>Добавить</a>
+</p>
+
+<QuickGrid Class="table" Items="context.Pokazaniya.Where(i=>i.SchetchikId==SchetchikId)">
+    <PropertyColumn Title="Дата" Property="pokazanie => pokazanie.DataPokazaniya" />
+    <PropertyColumn Title="Значение показания" Property="pokazanie => pokazanie.ZnacheniePokazaniya" />
+    <PropertyColumn Title="Счетчик" Property="pokazanie => pokazanie.SchetchikId" />
+
+    <TemplateColumn Context="pokazanie">
+        <a href="@($"pokazanies/edit?pokazanieid={pokazanie.PokazanieId}&abonentid={AbonentId}&schetchikid={SchetchikId}")">Редактировать</a> |
+        <a href="@($"pokazanies/details?pokazanieid={pokazanie.PokazanieId}&abonentid={AbonentId}&schetchikid={SchetchikId}")">Просмотр</a> |
+        <a href="@($"pokazanies/delete?pokazanieid={pokazanie.PokazanieId}&abonentid={AbonentId}&schetchikid={SchetchikId}")">Удалить</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int SchetchikId { get; set; }
+    
+    [SupplyParameterFromQuery]
+    private int AbonentId { get; set; }
+
+    private ApplicationDbContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+}

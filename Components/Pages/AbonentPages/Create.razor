@@ -1,0 +1,63 @@
+﻿@page "/abonents/create"
+@using Microsoft.EntityFrameworkCore
+@using _1lab.Data
+@inject IDbContextFactory<_1lab.Data.ApplicationDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Добавить абонента</PageTitle>
+
+<h1>Добавить абонента</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Abonent" OnValidSubmit="AddAbonent" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="mb-3">
+                <label for="lastname" class="form-label">Фамилия:</label>
+                <InputText id="lastname" @bind-Value="Abonent.LastName" class="form-control" />
+                <ValidationMessage For="() => Abonent.LastName" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Имя:</label> 
+                <InputText id="name" @bind-Value="Abonent.Name" class="form-control" /> 
+                <ValidationMessage For="() => Abonent.Name" class="text-danger" /> 
+            </div>      
+            <div class="mb-3">
+                <label for="securename" class="form-label">Отчетсво:</label> 
+                <InputText id="securename" @bind-Value="Abonent.SecureName" class="form-control" /> 
+                <ValidationMessage For="() => Abonent.SecureName" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="address" class="form-label">Адрес:</label> 
+                <InputText id="address" @bind-Value="Abonent.Address" class="form-control" /> 
+                <ValidationMessage For="() => Abonent.Address" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="phone" class="form-label">Номер телефона:</label> 
+                <InputText id="phone" @bind-Value="Abonent.Phone" class="form-control" /> 
+                <ValidationMessage For="() => Abonent.Phone" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/abonents">Возврат к списку абонентов</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private Abonent Abonent { get; set; } = new();
+
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task AddAbonent()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Abonents.Add(Abonent);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/abonents");
+    }
+}
